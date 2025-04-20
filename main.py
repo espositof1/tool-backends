@@ -15,12 +15,15 @@ def apply_cors_headers(response):
 def analyze_ratios():
     try:
         data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
+        if not data or not isinstance(data, dict):
+            return jsonify({"error": "Invalid or missing JSON data"}), 400
 
-        # Simple example ratios
+        # ✅ Fix: ensure each value is a dictionary
         result = {"ratios": {}}
         for year, values in data.items():
+            if not isinstance(values, dict):
+                continue  # Skip invalid entries
+
             revenue = values.get("revenue", 1)
             cogs = values.get("cogs", 1)
             current_assets = values.get("current_assets", 1)
@@ -45,6 +48,7 @@ def analyze_ratios():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/ratios", methods=["OPTIONS"])
 def handle_options():
